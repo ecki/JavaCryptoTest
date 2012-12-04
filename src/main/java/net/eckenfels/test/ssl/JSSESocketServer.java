@@ -49,7 +49,7 @@ import sun.security.x509.X509CertInfo;
 
 
 /**
- * Sime SSL Socket Server (single threaded) for experimenting with JSSE SSL sessions.
+ * Simple SSL Socket Server (single threaded) for experimenting with JSSE SSL sessions.
  *
  * @author Bernd Eckenfels
  */
@@ -58,17 +58,10 @@ public class JSSESocketServer
 	private final static String PASS = "changeit";
 
     /**
-     * @param args
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws NoSuchAlgorithmException
-     * @throws KeyManagementException
-     * @throws SignatureException
-     * @throws NoSuchProviderException
-     * @throws CertificateException
-     * @throws KeyStoreException
-     * @throws InvalidKeyException
-     * @throws UnrecoverableKeyException
+     * Main method to start socket server.
+     * <P>
+     * Does not use any parameters, but yo ucan use the system property to debug the
+     * various JCE and JSSE layers: <code>-Djavax.net.debug=ssl,keymanager</code>
      */
     public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, InvalidKeyException, KeyStoreException, CertificateException, NoSuchProviderException, SignatureException
     {
@@ -141,7 +134,16 @@ public class JSSESocketServer
         System.exit(0);
     }
 
-    private static void readBackground(final SSLSocket sock) {
+
+    /**
+     * Drain and dump input Stream of SSL Socket.
+     * <P>
+     * This is needed to allow multiple SSL Handshakes (renegotiation after initial handshake).
+     *
+     * @param sock
+     */
+    private static void readBackground(final SSLSocket sock)
+    {
     	Runnable run = new Runnable() {
     		SSLSocket s = sock;
     		@Override
@@ -157,7 +159,6 @@ public class JSSESocketServer
     					System.out.println(" read " + c);
     				}
     			} catch (IOException e) {
-    				// TODO Auto-generated catch block
     				e.printStackTrace();
     			}
     		}
@@ -274,7 +275,6 @@ public class JSSESocketServer
             }
         }
     }
-
 
     /** Create empty in-memory JKS implementation. */
     private static KeyStore emptyKeystore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
