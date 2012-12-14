@@ -107,7 +107,7 @@ public class JSSESocketServer
             @Override
             public void handshakeCompleted(HandshakeCompletedEvent event)
             {
-                System.out.println("Completed " + event);
+                System.out.println("[" + Thread.currentThread().getName() + "] Completed socket=" + event.getSocket() + " session=" + event.getSession());
             }
         };
         sock.addHandshakeCompletedListener(listener);
@@ -125,7 +125,7 @@ public class JSSESocketServer
         Thread.sleep(30*1000);
 
         System.out.println("o Disabling ciphers... ");
-        sock.setEnabledCipherSuites(new String[0]);
+        sock.setEnabledCipherSuites(new String[0]); // null not possible in sun.security.ssl.CipherSuiteList.<init>
 
         System.out.println("o Reading for 30s");
         Thread.sleep(30*1000);
@@ -163,7 +163,7 @@ public class JSSESocketServer
     			}
     		}
     	};
-    	new Thread(run).start();
+    	new Thread(run, "Reader " + sock).start();
 	}
 
     /** Print String Array. */
