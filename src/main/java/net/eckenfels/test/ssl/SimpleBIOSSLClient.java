@@ -18,6 +18,8 @@ public class SimpleBIOSSLClient
         c.configureBlocking(true);
         c.connect(new InetSocketAddress("www.gmail.com", 443));
 
+        // following code assumes all records are received complete and
+        // all (even multiple) fit into a single 2k read
         ByteBuffer buf = ByteBuffer.allocate(2048);
 
         constructClientHello(buf);
@@ -75,8 +77,8 @@ public class SimpleBIOSSLClient
         case HANDSHAKETPE_CLIENTHELLO:
             System.out.println("  ClientHello");
             break;
-            default:
-                System.out.println("  Handshake type=" + type);
+        default:
+            System.out.println("  Handshake type=" + type);
         }
         printRecordBytes(buf, len - 1);
     }
