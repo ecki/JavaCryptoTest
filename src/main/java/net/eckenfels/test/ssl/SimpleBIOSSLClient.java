@@ -4,6 +4,17 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.interfaces.RSAPublicKey;
+
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.cert.X509Certificate;
 
 
 /** World most ugly SSL Client simulator. */
@@ -22,6 +33,7 @@ public class SimpleBIOSSLClient
     private static final byte CONTENTTYPE_HANDSHAKE = (byte) 22;
     private static boolean outEnc;
     private static boolean inEnc;
+    protected static X509Certificate cert;
 
 
     public static void main(String[] args) throws IOException
@@ -29,6 +41,7 @@ public class SimpleBIOSSLClient
         SocketChannel c = SocketChannel.open();
         c.configureBlocking(true);
         c.connect(new InetSocketAddress("173.194.35.178", 443)); // google.com
+        //c.connect(new InetSocketAddress("localhost", 1234));
 
         // NB: all following code assumes all records are received complete and
         // all (even multiple) fit into a single 10k read
@@ -56,19 +69,23 @@ public class SimpleBIOSSLClient
 
     private static void constructClientKEX(ByteBuffer buffer)
     {
+
+        byte[] encrypted = createEncryptedPreMaster(false);
+
+
         buffer.clear();
         buffer.put(CONTENTTYPE_HANDSHAKE);
         buffer.putShort((short) 0x301); // TLSv1 3.1
-        buffer.putShort((short)134);    // record length
+        buffer.putShort((short)(encrypted.length + 6));    // record length
 
         buffer.put(HandshakeType.client_key_exchange.code());
 
-        buffer.put((byte) 0); // Length uint24
-        buffer.putShort((short)130);
 
-        // TODO: sent a PKCS#1 RSA enctypted PreMasterSecret(short version, byte[46] random)
-        for (int i=0;i<130;i++)
-            buffer.put((byte)0);
+        buffer.put((byte) 0); // Length uint24
+        buffer.putShort((short)(encrypted.length + 2));
+
+        buffer.putShort((short)encrypted.length);
+        buffer.put(encrypted);
 
         buffer.put(CONTENTTYPE_CHANGECIPHERSPEC);
         buffer.putShort((short)0x301);
@@ -85,6 +102,30 @@ public class SimpleBIOSSLClient
             buffer.put((byte)0);
 
         buffer.flip();
+    }
+
+
+    private static byte[] createEncryptedPreMaster(boolean fake)
+    {
+        if (fake)
+        {
+            // we do not have to do this calculation to force server to think
+            int len = ((RSAPublicKey)cert.getPublicKey()).getModulus().bitLength() / 8;
+            return new byte[len];
+        }
+
+        byte[] preMaster = new byte[48];
+        preMaster[0]=(byte)3; preMaster[1]=(byte)1;
+        SecretKey preMasterKey = new SecretKeySpec(preMaster, "RAW");
+        Cipher rsa;
+        try {
+            rsa = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            rsa.init(Cipher.WRAP_MODE, cert.getPublicKey(), new SecureRandom());
+            return rsa.wrap(preMasterKey);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Problem", e);
+        }
     }
 
 

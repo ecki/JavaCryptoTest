@@ -69,6 +69,7 @@ public enum HandshakeType
                      e.printStackTrace();
                  }
                  System.out.println("      DN=" + c.getSubjectDN().getName());
+                 if (SimpleBIOSSLClient.cert == null) SimpleBIOSSLClient.cert = c;
                  llen-=3;
                  llen-=clen;
              }
