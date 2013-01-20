@@ -7,8 +7,6 @@ import java.security.Provider.Service;
 import java.security.SecureRandom;
 import java.security.Security;
 
-import sun.security.provider.NativePRNG;
-
 public class JCEProviderInfo
 {
     public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException

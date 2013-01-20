@@ -55,7 +55,7 @@ import sun.security.x509.X509CertInfo;
  */
 public class JSSESocketServer
 {
-	private final static String PASS = "changeit";
+    private final static String PASS = "changeit";
 
     /**
      * Main method to start socket server.
@@ -94,11 +94,11 @@ public class JSSESocketServer
 
         System.out.println("  ssf default=" + dump(ssf.getDefaultCipherSuites()));
 
-        System.out.println("o Creating SSLServerSocket.");
+        System.out.println("o Creating SSLServerSocket. (port=1234)");
         SSLServerSocket server = (SSLServerSocket) ssf.createServerSocket(1234);
 
         System.out.println("  Listening on " + server.getLocalSocketAddress());
-        // the following list unfortunatelly contains more ciphers than will be accepted (for example if no server key is present).
+        // the following list unfortunately contains more ciphers than will be accepted (for example if no server key is present).
         System.out.println("  Enabled: ciphers=" + dump(server.getEnabledCipherSuites()) + " protos=" + dump(server.getEnabledProtocols()));
 
         SSLSocket sock = (SSLSocket) server.accept();
@@ -144,27 +144,27 @@ public class JSSESocketServer
      */
     private static void readBackground(final SSLSocket sock)
     {
-    	Runnable run = new Runnable() {
-    		SSLSocket s = sock;
-    		@Override
-    		public void run()
-    		{
-    			InputStream in;
-    			try {
-    				in = s.getInputStream();
+        Runnable run = new Runnable() {
+            SSLSocket s = sock;
+            @Override
+            public void run()
+            {
+                InputStream in;
+                try {
+                    in = s.getInputStream();
 
-    				int c;
-    				while((c = in.read()) >= 0)
-    				{
-    					System.out.println(" read " + c);
-    				}
-    			} catch (IOException e) {
-    				e.printStackTrace();
-    			}
-    		}
-    	};
-    	new Thread(run, "Reader " + sock).start();
-	}
+                    int c;
+                    while((c = in.read()) >= 0)
+                    {
+                        System.out.println(" read " + c);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        new Thread(run, "Reader " + sock).start();
+    }
 
     /** Print String Array. */
     private static String dump(String[] strings) {
@@ -241,37 +241,37 @@ public class JSSESocketServer
             String alias = aliases.nextElement();
             try
             {
-            	System.out.println("printKeys: try " + alias);
-            	if (!ks.isKeyEntry(alias))
-            	{
-            		System.out.println("printKeys " + alias + " is not a KeyEntry.");
-            		continue;
-            	}
-            	Key key = ks.getKey(alias, PASS.toCharArray());
-            	if (key instanceof PrivateKey == false)
-            	{
-            		System.out.println("printKeys  " + alias + " is not a Instance of PrivateKey but " + key.getClass().getName());
-            		continue;
-            	}
+                System.out.println("printKeys: try " + alias);
+                if (!ks.isKeyEntry(alias))
+                {
+                    System.out.println("printKeys " + alias + " is not a KeyEntry.");
+                    continue;
+                }
+                Key key = ks.getKey(alias, PASS.toCharArray());
+                if (key instanceof PrivateKey == false)
+                {
+                    System.out.println("printKeys  " + alias + " is not a Instance of PrivateKey but " + key.getClass().getName());
+                    continue;
+                }
 
-            	Certificate[]  certs = ks.getCertificateChain(alias);
-            	if ((certs == null) || (certs.length == 0) || !(certs[0] instanceof X509Certificate))
-            	{
-            		System.out.println("printKeys  " + alias + " has no X509Certificate(chain)");
-            		continue;
-            	}
+                Certificate[]  certs = ks.getCertificateChain(alias);
+                if ((certs == null) || (certs.length == 0) || !(certs[0] instanceof X509Certificate))
+                {
+                    System.out.println("printKeys  " + alias + " has no X509Certificate(chain)");
+                    continue;
+                }
 
-            	if (!(certs instanceof X509Certificate[]))
-            	{
-            		Certificate[] tmp = new X509Certificate[certs.length];
-            		System.arraycopy(certs, 0, tmp, 0, certs.length);
-            		certs = tmp;
-            	}
-            	System.out.println("printKeys certificate " + alias + " " + certs);
+                if (!(certs instanceof X509Certificate[]))
+                {
+                    Certificate[] tmp = new X509Certificate[certs.length];
+                    System.arraycopy(certs, 0, tmp, 0, certs.length);
+                    certs = tmp;
+                }
+                System.out.println("printKeys certificate " + alias + " " + certs);
             }
             catch (Exception ex)
             {
-            	System.out.println("printKeys  " + alias + " ignored because of exception " + ex);
+                System.out.println("printKeys  " + alias + " ignored because of exception " + ex);
             }
         }
     }
