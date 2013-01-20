@@ -3,6 +3,7 @@ package net.eckenfels.test.ssl;
 import static net.eckenfels.test.ssl.SimpleBIOSSLClient.dumpBytes;
 
 import java.nio.ByteBuffer;
+import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,7 +69,7 @@ public enum HandshakeType
                      // TODO Auto-generated catch block
                      e.printStackTrace();
                  }
-                 System.out.println("      DN=" + c.getSubjectDN().getName());
+                 System.out.println("      DN=" + c.getSubjectDN().getName() + " " + c.getPublicKey().getAlgorithm() + "/" + ((RSAPublicKey)c.getPublicKey()).getModulus().bitCount());
                  if (SimpleBIOSSLClient.cert == null) SimpleBIOSSLClient.cert = c;
                  llen-=3;
                  llen-=clen;

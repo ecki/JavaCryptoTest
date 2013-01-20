@@ -31,8 +31,10 @@ public class SimpleBIOSSLClient
     private static final byte CONTENTTYPE_CHANGECIPHERSPEC = (byte)20;
     private static final byte CONTENTTYPE_ALERT = (byte) 21;
     private static final byte CONTENTTYPE_HANDSHAKE = (byte) 22;
-    private static boolean outEnc;
-    private static boolean inEnc;
+
+    // some really silly session state
+    protected static boolean outEnc;
+    protected static boolean inEnc;
     protected static X509Certificate cert;
 
 
@@ -50,6 +52,16 @@ public class SimpleBIOSSLClient
         constructClientHello(buf, "test.de");
         printRecords(Direction.OUT, buf); buf.flip();
         c.write(buf);
+
+        buf.clear();
+        c.read(buf);
+        buf.flip();
+        printRecords(Direction.IN, buf);
+
+        buf.clear();
+        c.read(buf);
+        buf.flip();
+        printRecords(Direction.IN, buf);
 
         buf.clear();
         c.read(buf);
@@ -272,15 +284,15 @@ public class SimpleBIOSSLClient
         buffer.put((byte) 0); // sessionid length = 0
 
         buffer.putShort((short) 42); // 42 = 21 ciphers
-        buffer.putShort((short) 0x39); // TLS_RSA_WITH_RC4_128_SHA
+        buffer.putShort((short) 0x0a); // TLS_RSA_WITH_3DES_EDE_CBC_SHA (0x000a)
+        buffer.putShort((short) 0x07); // TLS_RSA_WITH_IDEA_CBC_SHA (0x0007)
+        buffer.putShort((short) 0x05); // TLS_RSA_WITH_RC4_128_SHA (0x0005)
+        buffer.putShort((short) 0x04); // TLS_RSA_WITH_RC4_128_MD5 (0x0004)
 
-        //buffer.putShort((short) 0x16);
-        buffer.putShort((short) 0x13);
-        buffer.putShort((short) 0x0a);
-        buffer.putShort((short) 0x66);
-        buffer.putShort((short) 0x07);
-        buffer.putShort((short) 0x05);
-        buffer.putShort((short) 0x04);
+        // DHE does not work
+        buffer.putShort((short) 0x39); // TLS_DHE_RSA_WITH_AES_256_CBC_SHA (0x0039)
+        buffer.putShort((short) 0x13); // TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA (0x0013)
+        buffer.putShort((short) 0x66); // TLS_DHE_DSS_WITH_RC4_128_SHA (0x0066)
         buffer.putShort((short) 0x65);
         buffer.putShort((short) 0x64);
         buffer.putShort((short) 0x63);
