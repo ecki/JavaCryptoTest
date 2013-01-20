@@ -17,12 +17,11 @@ public enum HandshakeType
      server_hello(2) {
          public void parse(ByteBuffer buf)
          {
-             int rlen = buf.limit();
+             int rlen = buf.limit() - buf.position();
              System.out.println("  Handshake " + name() + " len=" + rlen);
 
-             buf.get(); short len = buf.getShort(); // uint24
 
-             System.out.println("    Version=" + buf.get() + "." + buf.get() + " len=" + len);
+             System.out.println("    Version=" + buf.get() + "." + buf.get());
 
              byte[] random = new byte[32];
              buf.get(random);
@@ -46,13 +45,12 @@ public enum HandshakeType
      certificate(11) {
          public void parse(ByteBuffer buf)
          {
-             int rlen = buf.limit();
+             int rlen = buf.limit() - buf.position();
              System.out.println("  Handshake " + name() + " len=" + rlen);
 
-             buf.get(); short len = buf.getShort(); // uint24
              buf.get(); short llen = buf.getShort(); // uint24
 
-             System.out.println("    len=" + len + " listlen=" + llen);
+             System.out.println("    listlen=" + llen);
 
              rlen-=6;
              rlen-=llen;
@@ -116,7 +114,9 @@ public enum HandshakeType
 
     public void parse(ByteBuffer buf)
     {
-        System.out.println("  Handshake " + name());
-        SimpleBIOSSLClient.printRecordBytes(buf);
+        int rlen = buf.limit() - buf.position();
+        System.out.println("  Handshake " + name() + " len=" + rlen);
+        if (buf.hasRemaining())
+            SimpleBIOSSLClient.printRecordBytes(buf);
     }
 }

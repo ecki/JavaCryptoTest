@@ -4,15 +4,24 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.text.Format;
 
 
 /** World most ugly SSL Client simulator. */
 public class SimpleBIOSSLClient
 {
+    public enum Direction {
+        IN("<<<"), OUT(">>>");
+
+        String dir;
+        Direction(String dir) { this.dir = dir; }
+        public String toString() { return dir; }
+    }
+
     private static final byte CONTENTTYPE_CHANGECIPHERSPEC = (byte)20;
     private static final byte CONTENTTYPE_ALERT = (byte) 21;
     private static final byte CONTENTTYPE_HANDSHAKE = (byte) 22;
+    private static boolean outEnc;
+    private static boolean inEnc;
 
 
     public static void main(String[] args) throws IOException
@@ -26,22 +35,22 @@ public class SimpleBIOSSLClient
         ByteBuffer buf = ByteBuffer.allocate(10240);
 
         constructClientHello(buf, "test.de");
-        printRecords(">>>", buf); buf.flip();
+        printRecords(Direction.OUT, buf); buf.flip();
         c.write(buf);
 
         buf.clear();
         c.read(buf);
         buf.flip();
-        printRecords("<<<", buf);
+        printRecords(Direction.IN, buf);
 
         constructClientKEX(buf);
-        printRecords(">>>", buf); buf.flip();
+        printRecords(Direction.OUT, buf); buf.flip();
         c.write(buf);
 
         buf.clear();
         c.read(buf);
         buf.flip();
-        printRecords("<<<", buf);
+        printRecords(Direction.IN, buf);
     }
 
 
@@ -79,7 +88,7 @@ public class SimpleBIOSSLClient
     }
 
 
-    private static void printRecords(String marker, ByteBuffer buf)
+    private static void printRecords(Direction direction, ByteBuffer buf)
     {
         while(buf.hasRemaining())
         {
@@ -91,12 +100,12 @@ public class SimpleBIOSSLClient
             buf.position(buf.position() + len);
             data.limit(data.position() + len);
 
-            System.out.println(marker + "Record type=" + type + " version=" + v1 +"." + v2 + " len=" + len);
+            System.out.println(direction + " Record type=" + type + " version=" + v1 +"." + v2 + " len=" + len);
 
             switch (type)
             {
                 case CONTENTTYPE_HANDSHAKE:
-                    printHandshakeRecord(data);
+                    printHandshakeRecord(data, ((direction == Direction.IN)?inEnc:outEnc));
                     break;
                 case CONTENTTYPE_ALERT:
                     printAlertRecord(data);
@@ -104,6 +113,10 @@ public class SimpleBIOSSLClient
                 case CONTENTTYPE_CHANGECIPHERSPEC:
                     System.out.println("  Change Cipher Spec");
                     printRecordBytes(data);
+                    if (direction == Direction.OUT)
+                        outEnc = true;
+                    else
+                        inEnc = true;
                     break;
                 default:
                     printRecordBytes(data);
@@ -159,20 +172,33 @@ public class SimpleBIOSSLClient
             printRecordBytes(buf);
     }
 
-    static void printHandshakeRecord(ByteBuffer buf)
+    static void printHandshakeRecord(ByteBuffer buf, boolean enc)
     {
-        byte typeByte = buf.get();
-
-        HandshakeType type = HandshakeType.getTypeByCode(typeByte);
-
-        ByteBuffer data = buf.asReadOnlyBuffer();
-
-        if (type != null)
+        while(buf.hasRemaining())
         {
-            type.parse(data);
-        } else {
-            System.out.println("  Handshake type=" + typeByte);
-            printRecordBytes(data);
+
+            if (enc)
+            {
+                System.out.println("  Handshake Encrypted");
+                printRecordBytes(buf);
+                continue;
+            }
+
+            byte typeByte = buf.get();
+            HandshakeType type = HandshakeType.getTypeByCode(typeByte);
+            buf.get(); short len = buf.getShort(); // uint24
+
+            ByteBuffer data = buf.asReadOnlyBuffer();
+            data.limit(len + data.position());
+            buf.position(buf.position() + len);
+
+            if (type != null)
+            {
+                type.parse(data);
+            } else {
+                System.out.println("  Handshake type=" + typeByte);
+                printRecordBytes(data);
+            }
         }
     }
 
