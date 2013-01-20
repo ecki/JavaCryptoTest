@@ -32,6 +32,9 @@ public class SimpleBIOSSLClient
     private static final byte CONTENTTYPE_ALERT = (byte) 21;
     private static final byte CONTENTTYPE_HANDSHAKE = (byte) 22;
 
+    private static final short EXTENSION_SERVERNAME = 0;
+    private static final byte EXTENSION_SERVERNAME_HOSTNAME = 0;
+
     // some really silly session state
     protected static boolean outEnc;
     protected static boolean inEnc;
@@ -42,17 +45,22 @@ public class SimpleBIOSSLClient
 
     public static void main(String[] args) throws IOException
     {
+        String hostname = (args.length >= 1)?args[0]:"173.194.35.178";
+        int port = (args.length >= 2)?Integer.parseInt(args[1]):443;
+        String sni = (args.length >= 3)?args[2]:null;
+
+        System.out.println("Connecting " + hostname + ":" + port + " sni=" + sni);
+
         SocketChannel c = SocketChannel.open();
         c.configureBlocking(true);
-        //c.connect(new InetSocketAddress("173.194.35.178", 443)); // google.com
-        //c.connect(new InetSocketAddress("localhost", 1234));
-        c.connect(new InetSocketAddress("timestamp.geotrust.com", 443));
+
+        c.connect(new InetSocketAddress(hostname, port));
 
         // NB: all following code assumes all records are received complete and
         // all (even multiple) fit into a single 10k read
         ByteBuffer buf = ByteBuffer.allocate(10240);
 
-        constructClientHello(buf, "test.de");
+        constructClientHello(buf, sni);
         printRecords(Direction.OUT, buf); buf.flip();
         c.write(buf);
 
@@ -63,16 +71,6 @@ public class SimpleBIOSSLClient
             buf.flip();
             printRecords(Direction.IN, buf);
         }
-
-/*        buf.clear();
-        c.read(buf);
-        buf.flip();
-        printRecords(Direction.IN, buf);
-
-        buf.clear();
-        c.read(buf);
-        buf.flip();
-        printRecords(Direction.IN, buf);*/
 
         constructClientKEX(buf);
         printRecords(Direction.OUT, buf); buf.flip();
@@ -324,11 +322,11 @@ public class SimpleBIOSSLClient
         {
             buffer.putShort((short)(hostnameBytes.length+9)); // length
 
-            buffer.putShort((short)0); // ExtensionType server_name(0)
+            buffer.putShort(EXTENSION_SERVERNAME); // ExtensionType server_name(0)
             buffer.putShort((short)(hostnameBytes.length+5)); // len
 
             buffer.putShort((short)(hostnameBytes.length+3)); // len
-            buffer.put((byte)0); // name_type hostname(0)
+            buffer.put(EXTENSION_SERVERNAME_HOSTNAME); // name_type hostname(0)
             buffer.putShort((short)(hostnameBytes.length)); // HostName opaque length
             buffer.put(hostnameBytes);
         }
