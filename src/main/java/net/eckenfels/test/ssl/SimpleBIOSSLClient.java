@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.text.Format;
 
 
 /** World most ugly SSL Client simulator. */
@@ -51,7 +52,7 @@ public class SimpleBIOSSLClient
         buffer.putShort((short) 0x301); // TLSv1 3.1
         buffer.putShort((short)134);    // record length
 
-        buffer.put(HandshakeType.client_key_exchange.getCode());
+        buffer.put(HandshakeType.client_key_exchange.code());
 
         buffer.put((byte) 0); // Length uint24
         buffer.putShort((short)130);
@@ -83,40 +84,58 @@ public class SimpleBIOSSLClient
         while(buf.hasRemaining())
         {
             byte type = buf.get();
-            int len;
-            System.out.println(marker + "Record type=" + type + " version=" + buf.get() +"." + buf.get() + " len=" + (len = buf.getShort()));
+            byte v1 = buf.get(); byte v2=buf.get();
+            int len = buf.getShort();
+
+            ByteBuffer data = buf.asReadOnlyBuffer();
+            buf.position(buf.position()+len);
+            //System.out.println("++ " + data.position() + " " + data.limit() + " " + data.capacity()+ " len=" + len);
+            data.limit(data.position() + len);
+
+            System.out.println(marker + "Record type=" + type + " version=" + v1 +"." + v2 + " len=" + len);
+
             switch (type)
             {
                 case CONTENTTYPE_HANDSHAKE:
-                    printHandshakeRecord(buf, len);
+                    printHandshakeRecord(data);
                     break;
                 case CONTENTTYPE_ALERT:
-                    printAlertRecord(buf, len);
+                    printAlertRecord(data);
                     break;
                 case CONTENTTYPE_CHANGECIPHERSPEC:
                     System.out.println("  Change Cipher Spec");
-                    printRecordBytes(buf, len);
+                    printRecordBytes(data);
                     break;
                 default:
-                    printRecordBytes(buf, len);
+                    printRecordBytes(data);
                     break;
             }
         }
     }
 
-    private static void printRecordBytes(ByteBuffer buf, int len)
+    static void printRecordBytes(ByteBuffer buf)
     {
-        System.out.print("    bytes=");
-        for (int i = 0; i < len; i++)
-            System.out.printf("%02x ", buf.get());
-        System.out.println();
+        int rlen = buf.limit() - buf.position();
+        byte[] bytes = new byte[rlen];
+        buf.get(bytes);
+        System.out.println("    bytes=" + dumpBytes(bytes));
     }
 
-    private static void printAlertRecord(ByteBuffer buf, int len)
+    static String dumpBytes(byte[] bytes){
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++)
+            b.append(String.format("%02x ", bytes[i]));
+        return b.toString();
+    }
+
+
+    static void printAlertRecord(ByteBuffer buf)
     {
-        System.out.println("  Alert len=" + len);
+        int rlen = buf.limit();
+        System.out.println("  Alert len=" + rlen);
         byte warnError = buf.get();
         byte alertCode = buf.get();
+
         String alertLevel;
         switch(warnError)
         {
@@ -137,26 +156,28 @@ public class SimpleBIOSSLClient
         else
             System.out.println("    " + alertLevel + " AlerType(" + alertCode + ")");
 
-        len-=2;
-        if (len > 0)
-            printRecordBytes(buf, len);
+        if (buf.hasRemaining())
+            printRecordBytes(buf);
     }
 
-    private static void printHandshakeRecord(ByteBuffer buf, int len)
+    static void printHandshakeRecord(ByteBuffer buf)
     {
         byte typeByte = buf.get();
-        HandshakeType type = HandshakeType.getTypeByCode(typeByte);
-        if (type != null)
-            System.out.println("  Handshake " + type);
-        else
-            System.out.println("  Handshake type=" + typeByte);
 
-        len-=1;
-        if (len > 0)
-            printRecordBytes(buf, len);
+        HandshakeType type = HandshakeType.getTypeByCode(typeByte);
+
+        ByteBuffer data = buf.asReadOnlyBuffer();
+
+        if (type != null)
+        {
+            type.parse(data);
+        } else {
+            System.out.println("  Handshake type=" + typeByte);
+            printRecordBytes(data);
+        }
     }
 
-    private static void constructClientHello(ByteBuffer buffer, String hostname)
+    static void constructClientHello(ByteBuffer buffer, String hostname)
     {
         byte[] hostnameBytes = null;
         try { hostnameBytes = hostname.getBytes("ASCII"); } catch (Exception ignored) { }
@@ -166,7 +187,7 @@ public class SimpleBIOSSLClient
         buffer.putShort((short) 0x301); // TLSv1 3.1
         buffer.putShort((short) (85+((hostnameBytes!=null)?hostnameBytes.length+9:0))); // length
 
-        buffer.put(HandshakeType.client_hello.getCode());
+        buffer.put(HandshakeType.client_hello.code());
 
         buffer.put((byte) 0); // Length uint24
         buffer.putShort((short) (81+((hostnameBytes!=null)?hostnameBytes.length+9:0)));

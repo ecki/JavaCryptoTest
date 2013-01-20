@@ -36,8 +36,11 @@ public enum AlertType
     bad_certificate_status_response(113), /* new */
     bad_certificate_hash_value(114);      /* new */
 
+
     private static Map<Byte, AlertType> codeValueMap = new HashMap<Byte, AlertType>(100);
-    static {
+
+    static
+    {
         for (AlertType type : AlertType.values())
         {
             codeValueMap.put(Byte.valueOf(type.code), type);
@@ -49,13 +52,15 @@ public enum AlertType
         return codeValueMap.get(Byte.valueOf(code));
     }
 
+
     private byte code;
+
     private AlertType(int code)
     {
         this.code = (byte)code;
     }
 
-    public byte getCode()
+    public byte code()
     {
         return code;
     }
