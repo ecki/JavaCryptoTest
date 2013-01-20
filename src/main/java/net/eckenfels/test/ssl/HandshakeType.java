@@ -81,7 +81,19 @@ public enum HandshakeType
      },
 
      server_key_exchange (12),
-     certificate_request(13), server_hello_done(14),
+     certificate_request(13),
+
+     server_hello_done(14) {
+         public void parse(ByteBuffer buf)
+         {
+             SimpleBIOSSLClient.server_hello_done = true;
+             int rlen = buf.limit() - buf.position();
+             System.out.println("  Handshake " + name() + " len=" + rlen);
+             if (buf.hasRemaining())
+                 SimpleBIOSSLClient.printRecordBytes(buf);
+         }
+     },
+
      certificate_verify(15), client_key_exchange(16),
      finished(20), certificate_url(21), certificate_status(22);
 

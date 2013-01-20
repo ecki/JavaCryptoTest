@@ -36,14 +36,17 @@ public class SimpleBIOSSLClient
     protected static boolean outEnc;
     protected static boolean inEnc;
     protected static X509Certificate cert;
+    protected static boolean server_hello_done = false;
+    protected static boolean alert_received = false;
 
 
     public static void main(String[] args) throws IOException
     {
         SocketChannel c = SocketChannel.open();
         c.configureBlocking(true);
-        c.connect(new InetSocketAddress("173.194.35.178", 443)); // google.com
+        //c.connect(new InetSocketAddress("173.194.35.178", 443)); // google.com
         //c.connect(new InetSocketAddress("localhost", 1234));
+        c.connect(new InetSocketAddress("timestamp.geotrust.com", 443));
 
         // NB: all following code assumes all records are received complete and
         // all (even multiple) fit into a single 10k read
@@ -53,7 +56,15 @@ public class SimpleBIOSSLClient
         printRecords(Direction.OUT, buf); buf.flip();
         c.write(buf);
 
-        buf.clear();
+        while(!(server_hello_done || alert_received))
+        {
+            buf.clear();
+            c.read(buf);
+            buf.flip();
+            printRecords(Direction.IN, buf);
+        }
+
+/*        buf.clear();
         c.read(buf);
         buf.flip();
         printRecords(Direction.IN, buf);
@@ -61,12 +72,7 @@ public class SimpleBIOSSLClient
         buf.clear();
         c.read(buf);
         buf.flip();
-        printRecords(Direction.IN, buf);
-
-        buf.clear();
-        c.read(buf);
-        buf.flip();
-        printRecords(Direction.IN, buf);
+        printRecords(Direction.IN, buf);*/
 
         constructClientKEX(buf);
         printRecords(Direction.OUT, buf); buf.flip();
@@ -83,7 +89,6 @@ public class SimpleBIOSSLClient
     {
 
         byte[] encrypted = createEncryptedPreMaster(false);
-
 
         buffer.clear();
         buffer.put(CONTENTTYPE_HANDSHAKE);
@@ -108,8 +113,9 @@ public class SimpleBIOSSLClient
         // encrypted Finished 12 bytes
         buffer.put(CONTENTTYPE_HANDSHAKE);
         buffer.putShort((short)0x301);
-        buffer.putShort((short)36);
+        //buffer.putShort((short)38);
 
+        buffer.putShort((short)36);
         for (int i=0;i<36;i++)
             buffer.put((byte)0);
 
@@ -209,6 +215,7 @@ public class SimpleBIOSSLClient
             break;
         case 2:
             alertLevel = "fatal(2)";
+            alert_received = true;
             break;
         default:
             alertLevel = "AlertLevel(" + warnError +")";
