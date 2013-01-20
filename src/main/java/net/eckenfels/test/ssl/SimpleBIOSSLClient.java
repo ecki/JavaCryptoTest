@@ -88,8 +88,7 @@ public class SimpleBIOSSLClient
             int len = buf.getShort();
 
             ByteBuffer data = buf.asReadOnlyBuffer();
-            buf.position(buf.position()+len);
-            //System.out.println("++ " + data.position() + " " + data.limit() + " " + data.capacity()+ " len=" + len);
+            buf.position(buf.position() + len);
             data.limit(data.position() + len);
 
             System.out.println(marker + "Record type=" + type + " version=" + v1 +"." + v2 + " len=" + len);
@@ -180,17 +179,17 @@ public class SimpleBIOSSLClient
     static void constructClientHello(ByteBuffer buffer, String hostname)
     {
         byte[] hostnameBytes = null;
-        try { hostnameBytes = hostname.getBytes("ASCII"); } catch (Exception ignored) { }
+        try { hostnameBytes = hostname.getBytes("UTF8"); } catch (Exception ignored) { }
 
         buffer.clear();
         buffer.put(CONTENTTYPE_HANDSHAKE);
         buffer.putShort((short) 0x301); // TLSv1 3.1
-        buffer.putShort((short) (85+((hostnameBytes!=null)?hostnameBytes.length+9:0))); // length
+        buffer.putShort((short) (85+((hostnameBytes!=null)?hostnameBytes.length+11:0))); // length
 
         buffer.put(HandshakeType.client_hello.code());
 
         buffer.put((byte) 0); // Length uint24
-        buffer.putShort((short) (81+((hostnameBytes!=null)?hostnameBytes.length+9:0)));
+        buffer.putShort((short) (81+((hostnameBytes!=null)?hostnameBytes.length+11:0)));
 
         buffer.putShort((short) 0x301); // TLSv1 3.1
 
@@ -206,9 +205,9 @@ public class SimpleBIOSSLClient
         buffer.put((byte) 0); // sessionid length = 0
 
         buffer.putShort((short) 42); // 42 = 21 ciphers
-        // buffer.putShort((short)0x39); // TLS_RSA_WITH_RC4_128_SHA
+        buffer.putShort((short) 0x39); // TLS_RSA_WITH_RC4_128_SHA
 
-        buffer.putShort((short) 0x16);
+        //buffer.putShort((short) 0x16);
         buffer.putShort((short) 0x13);
         buffer.putShort((short) 0x0a);
         buffer.putShort((short) 0x66);
@@ -237,11 +236,12 @@ public class SimpleBIOSSLClient
         // SNI rfc3546
         if (hostnameBytes != null && hostnameBytes.length > 0)
         {
-            buffer.putShort((short)(hostnameBytes.length+7)); // length
+            buffer.putShort((short)(hostnameBytes.length+9)); // length
 
             buffer.putShort((short)0); // ExtensionType server_name(0)
-            buffer.putShort((short)(hostnameBytes.length+3)); // len
+            buffer.putShort((short)(hostnameBytes.length+5)); // len
 
+            buffer.putShort((short)(hostnameBytes.length+3)); // len
             buffer.put((byte)0); // name_type hostname(0)
             buffer.putShort((short)(hostnameBytes.length)); // HostName opaque length
             buffer.put(hostnameBytes);
