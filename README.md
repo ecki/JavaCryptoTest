@@ -3,13 +3,14 @@ JavaCryptoTest
 
 Assorted test code for JCE and JSSE
 
-
 ## JCE Provider Info
+
 Dumps all registered crypto providers
 
     java -cp target/classes net.eckenfels.test.jce.JCEProviderInfo
 
 ## Simple BlockingIO SSL Client
+
 This class can be used to simulate SSL Handshakes (with and without local crypto).
 
     java -cp target/classes net.eckenfels.test.ssl.SimpleBIOSSLClient [<hostname> [<portnum> [<snihostname>]]]
@@ -18,8 +19,9 @@ This class can be used to simulate SSL Handshakes (with and without local crypto
  - _portnum_ defaults to `443` (https)
  - _snihostname_ defaults to `null` (do not send)
 
- ## SSLServerSocket test code
- This class can be used to test aspects around ciphersuites and handshakes of the JSSE SSLServerSocket
+## SSLServerSocket test code
+
+This class can be used to test aspects around ciphersuites and handshakes of the JSSE SSLServerSocket
 
      java -cp target/classes net.eckenfels.test.ssl.JSSESocketServer
 
