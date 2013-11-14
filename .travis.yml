@@ -8,15 +8,6 @@ script: mvn verify
 jdk:
   - oraclejdk7
 
-env:
-  matrix:
-    - VER=7
-
-matrix:
-  include:
-    - jdk: openjdk6
-      env: VER=6
-
 notifications:
   email:
     - bernd-2013@eckenfels.net
