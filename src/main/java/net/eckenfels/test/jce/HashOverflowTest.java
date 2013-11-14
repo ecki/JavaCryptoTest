@@ -10,11 +10,26 @@ import java.security.Security;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
 public class HashOverflowTest
 {
+    @BeforeClass
+    public static void beforeClass()
+    {
+        try
+        {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+        catch (Exception ignored)
+        {
+            System.out.println("Cannot load BC: " + ignored);
+        }
+    }
+
     @Test
     public void testSHA1AllRegisteredProviders() throws NoSuchAlgorithmException
     {
@@ -26,6 +41,7 @@ public class HashOverflowTest
             fail("No Security Provider is implementing the MessageDigest." + DIGEST + " algorithm.");
         }
 
+        // could be parallel
         for(Provider p : providers)
         {
             Service service = p.getService("MessageDigest", DIGEST);
@@ -56,7 +72,7 @@ public class HashOverflowTest
         byte[] hash = digest.digest();
         long end = System.nanoTime();
         String hashString = DatatypeConverter.printHexBinary(hash).toLowerCase();
-        System.out.printf("%n %s %s in %.03fs%n", digest, hashString, (end - start)/1000000000.0);
+        System.out.printf("%n Digest:%s %dbytes x nul hash=%s in %.03fs%n", digest, (long)(bufSize * bufCount), hashString, (end - start)/1000000000.0);
         return hashString;
     }
 }
