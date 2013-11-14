@@ -7,6 +7,10 @@
   <name>Tests for Crypto in Java</name>
   <description>Just a playground project</description>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <dependencies>
       <dependency>
           <groupId>bouncycastle</groupId>
@@ -17,7 +21,7 @@
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
           <version>4.11</version>
-          <scope>test</scope>
+          <scope>compile</scope> <!--  Unit test is in main package -->
       </dependency>
   </dependencies>
 
@@ -30,7 +34,6 @@
               <configuration>
                     <source>7</source>
                     <target>7</target>
-                    <encoding>UTF-8</encoding>
               </configuration>
           </plugin>
       </plugins>
