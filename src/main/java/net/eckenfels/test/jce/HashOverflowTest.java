@@ -20,6 +20,7 @@ public class HashOverflowTest
     @BeforeClass
     public static void beforeClass()
     {
+        System.out.println("== HashOverflowTest on " + System.getProperty("java.runtime.version") + "/" + System.getProperty("java.vm.version") + " (" + System.getProperty("java.vm.vendor") + ") @ " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch") + " " + System.getProperty("sun.os.patch.level") + " ==");
         try
         {
             Security.addProvider(new BouncyCastleProvider());
