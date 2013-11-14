@@ -9,6 +9,11 @@ Dumps all registered crypto providers
 
     java -cp target/classes net.eckenfels.test.jce.JCEProviderInfo
 
+## SHA-1 Hash Overflow test
+
+Run the JUnit test for net.eckenfels.test.jce.HashOVerflowTest to verify SHA-1 test vectors
+for 257GB null bytes (see http://comments.gmane.org/gmane.comp.encryption.gpg.devel/18244)
+
 ## Simple BlockingIO SSL Client
 
 This class can be used to simulate SSL Handshakes (with and without local crypto).
