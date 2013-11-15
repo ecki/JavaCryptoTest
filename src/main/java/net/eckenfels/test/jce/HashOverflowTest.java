@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Provider.Service;
 import java.security.Security;
+import java.util.Locale;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -72,8 +73,8 @@ public class HashOverflowTest
         }
         byte[] hash = digest.digest();
         long end = System.nanoTime();
-        String hashString = DatatypeConverter.printHexBinary(hash).toLowerCase();
-        System.out.printf("%n Digest:%s %dbytes x nul hash=%s in %.03fs%n", digest, (long)(bufSize * bufCount), hashString, (end - start)/1000000000.0);
+        String hashString = DatatypeConverter.printHexBinary(hash).toLowerCase(Locale.ROOT);
+        System.out.printf("%n Digest:%s %dbytes x nul hash=%s in %.03fs%n", digest, (long)bufSize * bufCount, hashString, (end - start)/1000000000.0);
         return hashString;
     }
 }
