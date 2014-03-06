@@ -28,7 +28,7 @@ This class can be used to simulate SSL Handshakes (with and without local crypto
 
 This class can be used to test aspects around ciphersuites and handshakes of the JSSE SSLServerSocket
 
-     java -cp target/classes net.eckenfels.test.ssl.JSSESocketServer
+    java -cp target/classes net.eckenfels.test.ssl.JSSESocketServer
 
 It will isten to 0.0.0.0:1234 to one SSL connection, print out all handshake events,
 after 30 seconds disable all handshake ciphers, and then after 30 more seconds exit the test.
@@ -95,3 +95,15 @@ Example:
       "insecure_cipher_suites":{},
       "tls_version":"TLS 1.2",
       "rating":"Improvable"}
+
+## PRNG Info
+Simple PRNG SecureRandom timings:
+
+    java -cp target/classes net.eckenfels.test.jce.SecureRandomInfo
+    Default      SHA1PRNG SUN
+    Windows-PRNG Windows-PRNG SunMSCAPI : java.security.SecureRandom Seeded in 11ms
+    Windows-PRNG 10000*int Took 1461ms with instantiation/seeding
+    Windows-PRNG 10000*int Took 1090ms without instantiation/seeding
+    SHA1PRNG SHA1PRNG SUN : java.security.SecureRandom Seeded in 80ms
+    SHA1PRNG 10000*int Took 267ms with instantiation/seeding
+    SHA1PRNG 10000*int Took 4ms without instantiation/seeding
