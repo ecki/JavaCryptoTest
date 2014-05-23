@@ -100,10 +100,17 @@ Example:
 Simple PRNG SecureRandom timings:
 
     java -cp target/classes net.eckenfels.test.jce.SecureRandomInfo
-    Default      SHA1PRNG SUN
-    Windows-PRNG Windows-PRNG SunMSCAPI : java.security.SecureRandom Seeded in 11ms
-    Windows-PRNG 10000*int Took 1461ms with instantiation/seeding
-    Windows-PRNG 10000*int Took 1090ms without instantiation/seeding
-    SHA1PRNG SHA1PRNG SUN : java.security.SecureRandom Seeded in 80ms
-    SHA1PRNG 10000*int Took 267ms with instantiation/seeding
-    SHA1PRNG 10000*int Took 4ms without instantiation/seeding
+    new SecureRandom()              SHA1PRNG SUN
+    SecureRandom.getInstanceStrong  Windows-PRNG SunMSCAPI
+    Windows-PRNG SunMSCAPI : java.security.SecureRandom Seeded in 5,441 ms.
+    Windows-PRNG SunMSCAPI : java.security.SecureRandom nextInt() in 6,619 ms.
+    Windows-PRNG SunMSCAPI : java.security.SecureRandom nextInt() in 0,144 ms.
+    Windows-PRNG SunMSCAPI : java.security.SecureRandom nextInt() in 0,112 ms.
+    Windows-PRNG 10000*int Took 901,402 ms with instantiation/seeding.
+    Windows-PRNG 10000*int Took 797,608 ms without instantiation/seeding
+    SHA1PRNG SUN : java.security.SecureRandom Seeded in 0,247 ms.
+    SHA1PRNG SUN : java.security.SecureRandom nextInt() in 315,138 ms.
+    SHA1PRNG SUN : java.security.SecureRandom nextInt() in 0,058 ms.
+    SHA1PRNG SUN : java.security.SecureRandom nextInt() in 0,049 ms.
+    SHA1PRNG 10000*int Took 329,125 ms with instantiation/seeding.
+    SHA1PRNG 10000*int Took 7,351 ms without instantiation/seeding.
