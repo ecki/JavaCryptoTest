@@ -39,6 +39,9 @@ https://howsmyssl.com is a Site for testing Web Browsers and other SSL/TLS clien
 ciphers and other settings. The `net.eckenfels.test.howsmyssl.Client` class opens
 a SSL connection with the default provider of the VM and outputs the result from this web site.
 
+This code contains optionally hints on how to configure the supported SSL protocols as well
+as setting the endpoint identification (required by raw sockets to defend against MITM attacks).
+
 Example:
 
     c:\> java -cp target\classes net.eckenfels.test.howsmyssl.Client
