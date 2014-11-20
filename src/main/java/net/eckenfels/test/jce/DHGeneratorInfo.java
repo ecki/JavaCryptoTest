@@ -11,7 +11,7 @@ import javax.crypto.spec.DHParameterSpec;
 public class DHGeneratorInfo {
     public static void main (String[] args) throws Exception
     {
-        System.out.printf("JCE Provider Info: %s %s/%s on %s %s%n", System.getProperty("java.vm.name"),
+        System.out.printf("JCE Provider Info: %s %s/%s on %s %s%n%n", System.getProperty("java.vm.name"),
                           System.getProperty("java.runtime.version"),
                           System.getProperty("java.vm.version"),
                           System.getProperty("os.name"),
@@ -25,7 +25,7 @@ public class DHGeneratorInfo {
             } catch (InvalidParameterException e) {
                 continue;
             }
-            System.out.println("Largest Parameter: " + i + " " + paramGen.getAlgorithm() + "@" + paramGen.getProvider());
+            System.out.printf("Largest Parameter: size=%d %s@%s%n%n", i, paramGen.getAlgorithm(), paramGen.getProvider());
 
             final long t0 = System.nanoTime();
 
@@ -34,7 +34,7 @@ public class DHGeneratorInfo {
             final long t1 = System.nanoTime();
 
             final DHParameterSpec dhs = p.getParameterSpec(DHParameterSpec.class);
-            System.out.printf("  generated parameter in %.3fs: %s%n", ((t1-t0)/1000000000.0), p);
+            System.out.printf("  generated parameter in %.3fs: %s%n%n", ((t1-t0)/1000000000.0), p);
 
             final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
             keyGen.initialize(dhs);
