@@ -27,17 +27,21 @@ public class DHGeneratorInfo {
             }
             System.out.println("Largest Parameter: " + i + " " + paramGen.getAlgorithm() + "@" + paramGen.getProvider());
 
-            long t0 = System.nanoTime();
+            final long t0 = System.nanoTime();
 
-            AlgorithmParameters p = paramGen.generateParameters();
-            long t1 = System.nanoTime();
+            final AlgorithmParameters p = paramGen.generateParameters();
+
+            final long t1 = System.nanoTime();
+
             final DHParameterSpec dhs = p.getParameterSpec(DHParameterSpec.class);
             System.out.printf("  generated parameter in %.3fs: %s%n", ((t1-t0)/1000000000.0), p);
 
             final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
             keyGen.initialize(dhs);
-            KeyPair key = keyGen.generateKeyPair();
-            long t2 = System.nanoTime();
+            final KeyPair key = keyGen.generateKeyPair();
+
+            final long t2 = System.nanoTime();
+
             System.out.printf("  generated key in %.3fms: %s%n", ((t2-t1)/1000000.0), key.getPublic());
             break;
         }
