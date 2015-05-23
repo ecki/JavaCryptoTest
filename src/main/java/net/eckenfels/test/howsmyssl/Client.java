@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -18,20 +20,46 @@ import javax.net.ssl.SSLSocketFactory;
 /** Simple test client to connect to www.howsmyssl.com and read the API answer. */
 public class Client
 {
-    public static void main(String[] args) throws UnsupportedEncodingException, IOException
+    public static void main(String[] args) throws IOException, GeneralSecurityException
     {
         System.out.printf("Howsmyssl Test: %s %s/%s on %s %s%n", System.getProperty("java.vm.name"),
                           System.getProperty("java.runtime.version"),
                           System.getProperty("java.vm.version"),
                           System.getProperty("os.name"),
                           System.getProperty("os.version"));
+        System.out.printf("  disabledAlgorithms=%s ephemeralDHKeySize=%s%n",
+                          Security.getProperty("jdk.tls.disabledAlgorithms"),
+                          System.getProperty("jdk.tls.ephemeralDHKeySize", "N/A"));
 
-        SSLSocketFactory sf = (SSLSocketFactory)SSLSocketFactory.getDefault();
+        String mode = "default";
+        if (args.length > 0)
+        {
+            mode = args[0];
+        }
 
-        SSLSocket s = (SSLSocket)sf.createSocket("www.howsmyssl.com", 443);
-        //SSLSocket s = (SSLSocket)sf.createSocket(InetAddress.getByAddress(null, new byte[] {54,(byte)245,(byte)228,(byte)141})/*"www.howsmyssl.com""neskaya.eckenfels.net"*/, 443);
-        //SSLSocket s = (SSLSocket)sf.createSocket(InetAddress.getByAddress("www.howsmyssl.com", new byte[] {54,(byte)245,(byte)228,(byte)141})/*"www.howsmyssl.com""neskaya.eckenfels.net"*/, 443);
-        //SSLSocket s = (SSLSocket)sf.createSocket(InetAddress.getByAddress("54.245.228.141", new byte[] {54,(byte)245,(byte)228,(byte)141})/*"www.howsmyssl.com""neskaya.eckenfels.net"*/, 443);
+        SSLSocket s;
+        if ("default".equalsIgnoreCase(mode))
+        {
+            SSLSocketFactory sf = (SSLSocketFactory)SSLSocketFactory.getDefault();
+            System.out.printf("  Requesting default SF resulted in %s aka %s%n", sf.getClass().getName(), sf.toString());
+            s = (SSLSocket)sf.createSocket("www.howsmyssl.com", 443);
+            //SSLSocket s = (SSLSocket)sf.createSocket(InetAddress.getByAddress(null, new byte[] {54,(byte)245,(byte)228,(byte)141})/*"www.howsmyssl.com""neskaya.eckenfels.net"*/, 443);
+            //SSLSocket s = (SSLSocket)sf.createSocket(InetAddress.getByAddress("www.howsmyssl.com", new byte[] {54,(byte)245,(byte)228,(byte)141})/*"www.howsmyssl.com""neskaya.eckenfels.net"*/, 443);
+            //SSLSocket s = (SSLSocket)sf.createSocket(InetAddress.getByAddress("54.245.228.141", new byte[] {54,(byte)245,(byte)228,(byte)141})/*"www.howsmyssl.com""neskaya.eckenfels.net"*/, 443);
+        } else {
+            String[] provider = mode.split(",");
+            SSLContext ctx;
+            if (provider.length == 2)
+            {
+                ctx = SSLContext.getInstance(provider[0], provider[1]);
+            } else {
+                ctx = SSLContext.getInstance(mode);
+            }
+            ctx.init(null,  null, null);
+            System.out.printf("  Requesting %s resulted in %s of %s%n", mode, ctx.getClass().getName(), ctx.getProvider());
+            SSLSocketFactory sf = (SSLSocketFactory)ctx.getSocketFactory();
+            s = (SSLSocket)sf.createSocket("www.howsmyssl.com", 443);
+        }
 
         sanitizeProtocols(s);
         configureEndpointIdentification(s);
@@ -45,7 +73,7 @@ public class Client
 
         OutputStream out = s.getOutputStream();
         try /* TWR is Java 7 */ {
-            out.write("GET https://www.howsmyssl.com/a/check HTTP/1.1\n\rHost: www.howsmyssl.com\n\r\n\r".getBytes("ISO-8859-1"));
+            out.write("GET https://www.howsmyssl.com/a/check HTTP/1.0\n\rHost: www.howsmyssl.com:443\n\r\n\r".getBytes("ISO-8859-1"));
             try { printer.join(10 * 1000); } catch (InterruptedException ex) { Thread.currentThread().interrupt(); }
         } finally {
             silentClose(out);
@@ -94,7 +122,9 @@ public class Client
 
         List<String> wantedProt = Arrays.asList("TLSv1.2", "TLSv1.1", "TLSv1");
 
-        wantedProt.retainAll(supportedProt);
+        try {
+        wantedProt.retainAll(supportedProt); // does not work on IBM 6
+        } catch (UnsupportedOperationException ignored) { }
 
         if (wantedProt.isEmpty())
         {
