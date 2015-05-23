@@ -197,8 +197,14 @@ public class JSSESocketServer
 
         info.set(X509CertInfo.VALIDITY, interval);
         info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
-        info.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
-        info.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
+        try {
+            // java 8
+            info.set(X509CertInfo.SUBJECT, owner);
+            info.set(X509CertInfo.ISSUER, owner);
+        } catch (Exception e) {
+            info.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
+            info.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
+        }
         info.set(X509CertInfo.KEY, new CertificateX509Key(pubKey));
         info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
         AlgorithmId algo = new AlgorithmId(AlgorithmId.sha1WithRSAEncryption_oid);
