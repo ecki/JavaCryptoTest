@@ -14,6 +14,7 @@ import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +66,9 @@ public class Client
                           System.getProperty("java.vm.version"),
                           System.getProperty("os.name"),
                           System.getProperty("os.version"));
+        System.out.printf("  disabledAlgorithms=%s ephemeralDHKeySize=%s%n",
+                          Security.getProperty("jdk.tls.disabledAlgorithms"),
+                          System.getProperty("jdk.tls.ephemeralDHKeySize", "N/A"));
 
         String mode = "default";
         if (args.length > 0)
