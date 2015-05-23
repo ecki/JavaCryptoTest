@@ -10,7 +10,27 @@ public class JCEProviderInfo
 {
     public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException
     {
-        Provider[] ps = Security.getProviders();
+        System.out.printf("JCE Provider Info: %s %s/%s on %s %s%n", System.getProperty("java.vm.name"),
+                          System.getProperty("java.runtime.version"),
+                          System.getProperty("java.vm.version"),
+                          System.getProperty("os.name"),
+                          System.getProperty("os.version"));
+
+        Provider[] ps;
+        if (args.length > 0)
+        {
+            System.out.printf("Searching for JCA Security Providers with filter=\"%s\"%n", args[0]);
+            ps = Security.getProviders(args[0]);
+
+        } else {
+            System.out.printf("Listing all JCA Security Providers.%n");
+            ps = (args.length>0)?Security.getProviders(args[0]):Security.getProviders();
+        }
+        if (ps == null)
+        {
+            System.out.printf("No Results.%n");
+            return;
+        }
         for(Provider p : ps)
         {
             System.out.printf("--- Provider %s %s%n    info %s%n", p.getName(), p.getVersion(), p.getInfo());
