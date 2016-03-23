@@ -227,3 +227,76 @@ Example: (with a modified `java.security` file)
     <html><body>
         <h2>If you can view this page, your browser is vulnerable to the LogJam attack.</h2>
     </body></html>
+
+## HmacInfo
+
+Lists the length in bytes of the Mac (L=) and generated Keys (KL=) of the KeyGenerator (to show legacy length decisions).
+
+    HmacMD5    L = 16 KL = 64
+    HmacSHA1   L = 20 KL = 64
+    HmacSHA256 L = 32 KL = 32
+    HmacSHA384 L = 48 KL = 48
+    HmacSHA512 L = 64 KL = 64
+    HmacSHA224 java.security.NoSuchAlgorithmException: HmacSHA224 KeyGenerator not available
+
+## UrlInspect
+
+Allows to inspect certificate details of https-URLs. It can calculate the checksum of the public key info block required for HPKP aswell as SKI hashes and certificate fingerprints.
+
+    java net.eckenfels.test.ssl.UrlInspect https://developer.google.com
+
+    Connect to https://developer.google.com ...
+
+    -- Server Response Header --
+
+    HTTP/1.1 200 OK (TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA)
+      Content-Language: [en]
+      X-XSS-Protection: [1; mode=block]
+      Expires: [Wed, 23 Mar 2016 02:33:52 GMT]
+      Alternate-Protocol: [443:quic,p=1]
+      Last-Modified: [Wed, 23 Mar 2016 01:33:52 GMT]
+      Connection: [close]
+      Server: [Google Frontend]
+      X-Content-Type-Options: [nosniff]
+      Cache-Control: [max_age=3600, public, must-revalidate]
+      X-Frame-Options: [SAMEORIGIN]
+      Strict-Transport-Security: [max-age=31536000; includeSubdomains]
+      Alt-Svc: [quic=":443"; ma=2592000; v="31,30,29,28,27,26,25"]
+      Vary: [Accept-Language]
+      Date: [Wed, 23 Mar 2016 01:33:52 GMT]
+      Content-Type: [text/html; charset=utf-8]
+
+    -- Certificate Chain --
+
+    #0
+     Subject CN=*.google.com, O=Google Inc, L=Mountain View, ST=California, C=US
+       Alternative Name: [[2, *.google.com], [2, *.android.com], [2, *.appengine.google.com], [2, *.cloud.google.com], [2, *.google-analytics.com], [2, *.google.ca], [2, *.google.cl], [2, *.google.co.in], [2, *.google.co.jp], [2, *.google.co.uk], [2, *.google.com.ar], [2, *.google.com.au], [2, *.google.com.br], [2, *.google.com.co], [2, *.google.com.mx], [2, *.google.com.tr], [2, *.google.com.vn], [2, *.google.de], [2, *.google.es], [2, *.google.fr], [2, *.google.hu], [2, *.google.it], [2, *.google.nl], [2, *.google.pl], [2, *.google.pt], [2, *.googleadapis.com], [2, *.googleapis.cn], [2, *.googlecommerce.com], [2, *.googlevideo.com], [2, *.gstatic.cn], [2, *.gstatic.com], [2, *.gvt1.com], [2, *.gvt2.com], [2, *.metric.gstatic.com], [2, *.urchin.com], [2, *.url.google.com], [2, *.youtube-nocookie.com], [2, *.youtube.com], [2, *.youtubeeducation.com], [2, *.ytimg.com], [2, android.clients.google.com], [2, android.com], [2, g.co], [2, goo.gl], [2, google-analytics.com], [2, google.com], [2, googlecommerce.com], [2, urchin.com], [2, youtu.be], [2, youtube.com], [2, youtubeeducation.com]]
+     Issuer CN=Google Internet Authority G2, O=Google Inc, C=US
+      Signature SHA256withRSA from:Wed Mar 09 12:18:04 CET 2016 - Tue Jun 07 02:00:00 CEST 2016 Key EC
+    #1
+     Subject CN=Google Internet Authority G2, O=Google Inc, C=US
+     Issuer CN=GeoTrust Global CA, O=GeoTrust Inc., C=US
+      Signature SHA256withRSA from:Fri Apr 05 17:15:56 CEST 2013 - Sun Jan 01 00:59:59 CET 2017 Key RSA
+    #2
+     Subject CN=GeoTrust Global CA, O=GeoTrust Inc., C=US
+     Issuer OU=Equifax Secure Certificate Authority, O=Equifax, C=US
+      Signature SHA1withRSA from:Tue May 21 06:00:00 CEST 2002 - Tue Aug 21 06:00:00 CEST 2018 Key RSA
+
+    -- Server Certificate --
+
+    Subject CN=*.google.com, O=Google Inc, L=Mountain View, ST=California, C=US
+      v3 serial 21933373990a7990
+      Thumbprint SHA256 c38fb0ce7783776a14b5229859809336e7400e88aa32bf2e0ea5056fd207c82b
+      Thumbprint SHA1   9970d67cb8427118dca688dbdcc86966969d5188
+      Public Key: Sun EC public key, 256 bits
+      public x coord: 19096264774409158746149655369491192997360979366810254666240547491450269095665
+      public y coord: 74482336179872778120611899634942297230025368082430124059396331957476587695769
+      parameters: secp256r1 [NIST P-256, X9.62 prime256v1] (1.2.840.10045.3.1.7)
+      Public-Key-Pins: pin-sha256="y5u+9shpOZVftaMmkM2zj837knujPaznnMTp8U9XQpA=" (cb9bbef6c86939955fb5a32690cdb38fcdfb927ba33dace79cc4e9f14f574290)
+      SKI(SHA1) Ext  1007b443d7275cbaec8c455b39a66121d6433c76
+      SKI(SHA1) Calc dee64fedfc7821a0591d4937a2c6ce0d9c85ab30 <- bug
+      AKI(SHA1) Ext  4add06161bbcf668b576f581b6bb621aba5a812f
+      AKI(SHA1) Calc 4add06161bbcf668b576f581b6bb621aba5a812f
+
+     Issuer CN=Google Internet Authority G2, O=Google Inc, C=US
+      Signature SHA256withRSA from:Wed Mar 09 12:18:04 CET 2016 - Tue Jun 07 02:00:00 CEST 2016
