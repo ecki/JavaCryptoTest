@@ -26,12 +26,12 @@ This class can be used to simulate SSL Handshakes (with and without local crypto
 
 ## SSLServerSocket test code
 
-This class can be used to test aspects around ciphersuites and handshakes of the JSSE SSLServerSocket
+This class can be used to test aspects around cipher suites and handshakes of the JSSE SSLServerSocket
 
     java -cp target/classes net.eckenfels.test.ssl.JSSESocketServer
 
 It will isten to 0.0.0.0:1234 to one SSL connection, print out all handshake events,
-after 30 seconds disable all handshake ciphers, and then after 30 more seconds exit the test.
+after 30 seconds disable all handshake ciphers, and then after 30 more seconds exit the test. It answers with a short greeting and a http/1.1 session with no keep-alive.
 
 ## SSLSocketFactory validation with howsmyssl.com
 
@@ -227,6 +227,8 @@ Example: (with a modified `java.security` file)
     <html><body>
         <h2>If you can view this page, your browser is vulnerable to the LogJam attack.</h2>
     </body></html>
+
+You can also use `net.eckenfels.test.ssl.HttpsConnection` to test connecting this site.
 
 ## HmacInfo
 

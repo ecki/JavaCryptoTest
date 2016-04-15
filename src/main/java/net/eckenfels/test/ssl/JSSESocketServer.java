@@ -2,6 +2,7 @@ package net.eckenfels.test.ssl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -118,6 +119,10 @@ public class JSSESocketServer
         sock.startHandshake();
         System.out.println("  After handshake, usedCipher=" + sock.getSession().getCipherSuite());
         System.out.println("  enabled=" + dump(sock.getEnabledCipherSuites()));
+
+        OutputStream out = sock.getOutputStream();
+        out.write("200 OK\n\rLength: 5\n\rConnection: close\n\r\n\rABCDE".getBytes());
+        out.close();
 
 
         System.out.println("o Reading for 30s");
