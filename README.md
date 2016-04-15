@@ -1,7 +1,8 @@
 JavaCryptoTest
 ==============
 
-Assorted test code for JCE and JSSE
+Assorted test code for JCE and JSSE.
+[![Build Status](https://travis-ci.org/ecki/JavaCryptoTest.svg?branch=master)](https://travis-ci.org/ecki/JavaCryptoTest)
 
 ## JCE Provider Info
 
