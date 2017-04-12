@@ -17,6 +17,16 @@ public class DHGeneratorInfo {
                           System.getProperty("os.name"),
                           System.getProperty("os.version"));
 
+
+        long t1 = System.nanoTime();
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
+        keyGen.initialize(2048);
+        KeyPair key = keyGen.generateKeyPair();
+
+        long t2 = System.nanoTime();
+
+        System.out.printf("  generated key in %.3fms: %s%n", ((t2-t1)/1000000.0), key.getPublic());
+
         AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DiffieHellman");
         for (int i = 16*1024 ; i>=512; i -= 64)
         {
@@ -31,16 +41,16 @@ public class DHGeneratorInfo {
 
             final AlgorithmParameters p = paramGen.generateParameters();
 
-            final long t1 = System.nanoTime();
+            t1 = System.nanoTime();
 
             final DHParameterSpec dhs = p.getParameterSpec(DHParameterSpec.class);
             System.out.printf("  generated parameter in %.3fs: %s%n%n", ((t1-t0)/1000000000.0), p);
 
-            final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
+            keyGen = KeyPairGenerator.getInstance("DH");
             keyGen.initialize(dhs);
-            final KeyPair key = keyGen.generateKeyPair();
+            key = keyGen.generateKeyPair();
 
-            final long t2 = System.nanoTime();
+            t2 = System.nanoTime();
 
             System.out.printf("  generated key in %.3fms: %s%n", ((t2-t1)/1000000.0), key.getPublic());
             break;

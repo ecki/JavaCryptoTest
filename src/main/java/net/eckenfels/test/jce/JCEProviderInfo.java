@@ -26,7 +26,7 @@ public class JCEProviderInfo
             System.out.printf("Listing all JCA Security Providers.%n");
             ps = (args.length>0)?Security.getProviders(args[0]):Security.getProviders();
         }
-        if (ps == null)
+        if (ps == null || ps.length == 0)
         {
             System.out.printf("No Results.%n");
             return;
