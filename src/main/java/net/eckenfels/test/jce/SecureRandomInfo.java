@@ -3,7 +3,6 @@ package net.eckenfels.test.jce;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Provider.Service;
 import java.security.SecureRandom;
@@ -12,7 +11,7 @@ import java.util.Set;
 
 public class SecureRandomInfo
 {
-    public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException, SecurityException, IOException
+    public static void main(String[] args) throws NoSuchAlgorithmException, SecurityException, IOException
     {
         System.out.printf("SecureRandom Info: %s %s/%s on %s %s%n", System.getProperty("java.vm.name"),
                           System.getProperty("java.runtime.version"),
