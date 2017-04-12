@@ -1,6 +1,7 @@
 package net.eckenfels.test.ssl;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -17,7 +18,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 
 /**
- * Calculates various certificate fingerprints for tsting.
+ * Calculates various certificate fingerprints for testing.
  * <P>
  * Can be used to inspect and validate thumbprints, SKI and Public Key Pins.
  *
@@ -27,6 +28,9 @@ public class UrlInspect
 {
     public static void main(String[] args) throws IOException, CertificateException
     {
+        //sun.util.logging.PlatformLogger.getLogger("sun.net.www.protocol.http.HttpsURLConnection") .setLevel(Level.ALL);
+        //System.out.println("pos=" + Security.insertProviderAt(new BouncyCastleProvider(), 2));
+
         // default URL or specify as first command argument an https URL
         // java UrlInspect https://scotthelme.co.uk/hpkp-http-public-key-pinning (require letsencrypt ca)
         // todo: https://pinningtest.appspot.com/
@@ -37,6 +41,7 @@ public class UrlInspect
 
         System.out.println("Connect to " + url + " ...");
 
+        HttpURLConnection.setFollowRedirects(false);
         HttpsURLConnection c = (HttpsURLConnection)url.openConnection();
         c.setRequestMethod("HEAD"); // GET
         c.setDoOutput(false); c.setAllowUserInteraction(false);
