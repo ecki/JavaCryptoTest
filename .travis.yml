@@ -6,9 +6,8 @@ install: mvn -B -X -q clean
 script: mvn verify
 
 jdk:
-  - oraclejdk7
   - oraclejdk8
 
 notifications:
   email:
-    - bernd-2016@eckenfels.net
+    - bernd-2017@eckenfels.net
