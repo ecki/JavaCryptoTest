@@ -73,7 +73,7 @@ public class Client
 
         OutputStream out = s.getOutputStream();
         try /* TWR is Java 7 */ {
-            out.write("GET https://www.howsmyssl.com/a/check HTTP/1.0\n\rHost: www.howsmyssl.com:443\n\r\n\r".getBytes("ISO-8859-1"));
+            out.write("GET /a/check HTTP/1.1\r\nHost: www.howsmyssl.com:443\r\nConnection: close\r\n\r\n".getBytes("ISO-8859-1"));
             try { printer.join(10 * 1000); } catch (InterruptedException ex) { Thread.currentThread().interrupt(); }
         } finally {
             silentClose(out);
