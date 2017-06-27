@@ -27,6 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -37,6 +38,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 
 /** Playground to create non-canonical X.509 test certs. */
@@ -488,8 +491,13 @@ public class BrokenCert
         }
     }
 
-    /** Save the given DER Bytes as PEM .crt file and print it. */
-    private static void saveCrt(byte[] result, String name) throws IOException
+    /** Save the given DER Bytes as PEM .crt file and print it.
+     * @throws SignatureException
+     * @throws NoSuchProviderException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws InvalidKeyException */
+    private static void saveCrt(byte[] result, String name) throws IOException, InvalidKeyException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException
     {
         String pem =  "-----BEGIN CERTIFICATE-----\r\n"
                         +Base64.getMimeEncoder().encodeToString(result)
@@ -499,8 +507,7 @@ public class BrokenCert
 
         System.out.printf("%nCert: %s%n%s%n",  name, pem);
 
-        //KeyStore ks = KeyStore.getInstance("JKS");
-        //ks.setKeyEntry(name, key, "secret", c);
+        tryValidate(p);
     }
 
     /** Create DER encoded self-signed cert with optional flaws. */
@@ -529,6 +536,7 @@ public class BrokenCert
     /** Try to load and parse the given certificate file. Asumes self-signed. */
     private static void tryValidate(Path p) throws CertificateException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException
     {
+        System.out.println("Verify " + p);
         try (InputStream in = Files.newInputStream(p))
         {
             X509Certificate c = (X509Certificate)CertificateFactory.getInstance("X.509")
@@ -536,8 +544,23 @@ public class BrokenCert
             System.out.println(" " + c.getSubjectDN());
             PublicKey pubkey = c.getPublicKey();
             c.verify(pubkey);
-            System.out.println("verified self");
+            System.out.println(" + verified JDK");
+        } catch (Exception e) {
+            System.out.println(" ? Failed JDK " + e);
         }
+
+        try (InputStream in = Files.newInputStream(p))
+        {
+            X509Certificate c = (X509Certificate)CertificateFactory.getInstance("X.509", new BouncyCastleProvider())
+                            .generateCertificate(in);
+            System.out.println(" " + c.getSubjectDN() + " " + c.getClass());
+            PublicKey pubkey = c.getPublicKey();
+            c.verify(pubkey);
+            System.out.println(" + verified BC");
+        } catch (Exception e) {
+            System.out.println(" ? Failed BC " +e);
+        }
+
     }
 
 
