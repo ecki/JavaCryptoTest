@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -40,6 +41,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 
 
 /** Playground to create non-canonical X.509 test certs. */
@@ -541,7 +544,7 @@ public class BrokenCert
         {
             X509Certificate c = (X509Certificate)CertificateFactory.getInstance("X.509")
                             .generateCertificate(in);
-            System.out.println(" " + c.getSubjectDN());
+            System.out.println("JDK Cert " + c);
             PublicKey pubkey = c.getPublicKey();
             c.verify(pubkey);
             System.out.println(" + verified JDK");
@@ -553,7 +556,7 @@ public class BrokenCert
         {
             X509Certificate c = (X509Certificate)CertificateFactory.getInstance("X.509", new BouncyCastleProvider())
                             .generateCertificate(in);
-            System.out.println(" " + c.getSubjectDN() + " " + c.getClass());
+            System.out.println("BC  Cert: " + c);
             PublicKey pubkey = c.getPublicKey();
             c.verify(pubkey);
             System.out.println(" + verified BC");
@@ -561,11 +564,28 @@ public class BrokenCert
             System.out.println(" ? Failed BC " +e);
         }
 
+        try (InputStream in = Files.newInputStream(p))
+        {
+            PemReader pr = new PemReader(new InputStreamReader(in, StandardCharsets.US_ASCII));
+            PemObject po = pr.readPemObject();
+            byte[] cbytes = po.getContent();
+            X509Certificate c = (X509Certificate)CertificateFactory.getInstance("X.509", new BouncyCastleProvider())
+                            .generateCertificate(new ByteArrayInputStream(cbytes));
+            System.out.println("BC PEM Cert: " + c);
+            PublicKey pubkey = c.getPublicKey();
+            c.verify(pubkey);
+            System.out.println(" + verified BC PEM");
+        } catch (Exception e) {
+            System.out.println(" ? Failed BC PEM" +e);
+        }
+
+
     }
 
 
     public static void main(String[] args) throws IOException, GeneralSecurityException
     {
+        Security.addProvider(new BouncyCastleProvider());
         //createKey();
 
         byte[] result = makeCert(false, false);
