@@ -337,3 +337,24 @@ For each problematic certification file the name and the exception is printed:
         at net.eckenfels.test.certpath.CertExplorer.main(CertExplorer.java:47)
     ...
     loading C:\temp\certdir\alias3.crt  CN=Test, C=US
+
+## Create Broken Certs
+
+In order to test stricter DER parsing of JDK 8u121+8u131 as well as BC 1.56 and 1.57 this method allows to generate self signed RSA certificates with redundant leading 0s in serial number and exponent.
+
+    java -cp target/*.jar net.eckenfels.test.certpath.BrokenCert
+    ...
+    Cert: self-serial
+    -----BEGIN CERTIFICATE-----
+    MIIBlDCB/qADAgECAgIAQjANBgkqhkiG9w0BAQUFADASMRAwDgYDVQQDEwdzdWJqZWN0MBoXCzE2
+    MTIzMTAwMDBaFwsxODEyMzEwMDAwWjASMRAwDgYDVQQDEwdzdWJqZWN0MIGfMA0GCSqGSIb3DQEB
+    AQUAA4GNADCBiQKBgQCBYz9Rm/W6O7bb58Dx34iAA/6kJZMpOstuih9P6+lFQ79CGD548Ix+XxfX
+    i0DW1IGpIu4uZmWiQJTqdUSZ/zPCHFaUJFFC7T50bBjSY2xZrmLZ5VT0SeOB8ShXTjGGAeXO1IVu
+    /3jY1CvlbI8PhJUOcTRad8j1VbGUR3P1b/XBWwIDAQABMA0GCSqGSIb3DQEBBQUAA4GBAEosh6n2
+    YT0tR1u1i9voK1FBYfwTymemg22/hsLMhnV01d+xCzbVU2/5AyWCm/kq7VrTPkF2Rwhtf0xErW5Y
+    4xIFLr5tdBDlw4g4pm8wG+svTfdo43CaDFm6ZYtfURWmMU4sWIdaxmy5WXiPVbnVZeITh2AetJhW
+    27cHCCTFzOj6
+    -----END CERTIFICATE-----
+    Verify C:\ws\github\JavaCryptoTest\target\self-serial.crt
+     ? Failed JDK java.security.cert.CertificateParsingException: java.io.IOException: Invalid encoding: redundant leading 0s
+     ? Failed BC org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory$ExCertificateException
