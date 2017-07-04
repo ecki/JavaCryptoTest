@@ -340,7 +340,7 @@ For each problematic certification file the name and the exception is printed:
 
 ## Create Broken Certs
 
-In order to test stricter DER parsing of JDK 8u121+8u131 as well as BC 1.56 and 1.57 this method allows to generate self signed RSA certificates with redundant leading 0s in serial number and exponent.
+In order to test stricter ASN.1 parsing of Oracle/Open JDK 8u121+8u131 as well as BC 1.56 and 1.57 this method allows to generate self signed RSA certificates with redundant leading 0s in serial number and exponent.
 
     java -cp target/*.jar net.eckenfels.test.certpath.BrokenCert
     ...
@@ -356,5 +356,8 @@ In order to test stricter DER parsing of JDK 8u121+8u131 as well as BC 1.56 and 
     27cHCCTFzOj6
     -----END CERTIFICATE-----
     Verify C:\ws\github\JavaCryptoTest\target\self-serial.crt
-     ? Failed JDK java.security.cert.CertificateParsingException: java.io.IOException: Invalid encoding: redundant leading 0s
-     ? Failed BC org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory$ExCertificateException
+     ? Failed JDK: java.security.cert.CertificateParsingException: java.io.IOException: Invalid encoding: redundant leading 0s
+     ? Failed BC: org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory$ExCertificateException
+     ? Failed BC PEM: org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory$ExCertificateException
+
+It will generate different self-signed certificates and a JKS with containing self-ok.crt with keystore and entry password "pass".

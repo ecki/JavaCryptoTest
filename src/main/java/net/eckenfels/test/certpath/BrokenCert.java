@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
@@ -485,12 +486,12 @@ public class BrokenCert
 
         PrivateKey pk = getPrivKey();
 
-        ks.setKeyEntry(alias, pk, "secret".toCharArray(), chain);
+        ks.setKeyEntry(alias, pk, "pass".toCharArray(), chain); // key entry password
 
         Path p = Paths.get("target", alias+".jks").toAbsolutePath();
         try (OutputStream os = Files.newOutputStream(p);)
         {
-            ks.store(os, "public".toCharArray());
+            ks.store(os, "pass".toCharArray()); // Integrity password
         }
     }
 
@@ -514,14 +515,14 @@ public class BrokenCert
     }
 
     /** Create DER encoded self-signed cert with optional flaws. */
-    static byte[] makeCert(boolean brokenSerial, boolean brokenExpo) throws GeneralSecurityException, IOException
+    static byte[] makeCert(boolean brokenSerial, boolean brokenExpo, boolean brokenSig) throws GeneralSecurityException, IOException
     {
         Seq top = new Seq();
         Seq tbsCert = new Seq();
         /* [0]version */tbsCert.add(new Tagged(0, new Int("02"))); // [0]2(v3)
-        /* serial */    tbsCert.add(new Int(brokenSerial?"0042":"42"));     // broken 0x0066
+        /* serial */    tbsCert.add(new Int(brokenSerial?"0042":"42"));
         /* signature */ tbsCert.add(new AlgId(ALGID_SHA1wRSA));      // RSAwithSHA1/NULL
-        /* issuer */    tbsCert.add(new Name("subject"));  // cn=issuer
+        /* issuer */    tbsCert.add(new Name("subject"));  // cn=subject - selfsigned
         /* validity */  tbsCert.add(new Validity());      // 2016-2018
         /* subject */   tbsCert.add(new Name("subject")); // cn=subject
         /* pk info */   tbsCert.add(new Raw(brokenExpo?PUBKEY2:PUBKEY));     // RSA 1024 (createKey())
@@ -530,6 +531,12 @@ public class BrokenCert
         top.add(new AlgId(ALGID_SHA1wRSA));
 
         byte[] sig = createSig(ALGID_SHA1wRSA, tbsCert.getEncoded());
+        if (brokenSig)
+        {
+        	byte[] sig2 = new byte[sig.length+1];
+        	System.arraycopy(sig, 0, sig2, 1, sig.length);
+        	sig = sig2;
+        }
         top.add(new Bits(sig)); // TODO: does not work yet
 
         byte[] result = top.getEncoded();
@@ -549,7 +556,7 @@ public class BrokenCert
             c.verify(pubkey);
             System.out.println(" + verified JDK");
         } catch (Exception e) {
-            System.out.println(" ? Failed JDK " + e);
+            System.out.println(" ? Failed JDK: " + e);
         }
 
         try (InputStream in = Files.newInputStream(p))
@@ -561,7 +568,7 @@ public class BrokenCert
             c.verify(pubkey);
             System.out.println(" + verified BC");
         } catch (Exception e) {
-            System.out.println(" ? Failed BC " +e);
+            System.out.println(" ? Failed BC: " +e);
         }
 
         try (InputStream in = Files.newInputStream(p))
@@ -576,7 +583,7 @@ public class BrokenCert
             c.verify(pubkey);
             System.out.println(" + verified BC PEM");
         } catch (Exception e) {
-            System.out.println(" ? Failed BC PEM" +e);
+            System.out.println(" ? Failed BC PEM: " +e);
         }
 
 
@@ -588,18 +595,21 @@ public class BrokenCert
         Security.addProvider(new BouncyCastleProvider());
         //createKey();
 
-        byte[] result = makeCert(false, false);
+        byte[] result = makeCert(false, false, false);
 
         saveKey(result, "self-ok");
         saveCrt(result, "self-ok");
 
-        result = makeCert(true, false);
+        result = makeCert(true, false, false);
         saveCrt(result, "self-serial");
 
-        result = makeCert(false, true);
+        result = makeCert(false, true, false);
         saveCrt(result, "self-expo");
 
-        result = makeCert(true, true);
+        result = makeCert(false, false, true);
+        saveCrt(result, "self-sig");
+
+        result = makeCert(true, true, false);
         saveCrt(result, "self-both");
 
         System.out.println();
