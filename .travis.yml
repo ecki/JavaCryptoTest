@@ -1,5 +1,6 @@
 language: java
-dist: trusy
+dist: trusty
+os: linux
 
 install: mvn -B -X -q clean
 
