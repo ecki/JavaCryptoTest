@@ -1,13 +1,14 @@
 language: java
+dist: trusy
 
 install: mvn -B -X -q clean
 
 # clean / compile - test - package - verify - install - deploy / site
-script: mvn verify
+script: mvn -B -X verify
 
 jdk:
   - oraclejdk8
 
 notifications:
   email:
-    - bernd-2017@eckenfels.net
+    - bernd-2020@eckenfels.net
