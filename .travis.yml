@@ -1,4 +1,5 @@
 language: java
+dist: trusty
 
 install: mvn -B -X -q clean
 
@@ -7,7 +8,8 @@ script: mvn verify
 
 jdk:
   - oraclejdk8
+  - openjdk11
 
 notifications:
   email:
-    - bernd-2017@eckenfels.net
+    - bernd-2020@eckenfels.net
