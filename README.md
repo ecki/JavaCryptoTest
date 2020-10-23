@@ -3,6 +3,7 @@ JavaCryptoTest
 
 Assorted test code for JCE and JSSE.
 [![Build Status](https://travis-ci.org/ecki/JavaCryptoTest.svg?branch=master)](https://travis-ci.org/ecki/JavaCryptoTest)
+[![Known Vulnerabilities](https://snyk.io/test/github/ecki/JavaCryptoTest/badge.svg)](https://snyk.io/test/github/ecki/JavaCryptoTest)
 
 ## JCE Provider Info
 
