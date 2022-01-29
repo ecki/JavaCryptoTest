@@ -2,14 +2,14 @@ language: java
 dist: trusty
 os: linux
 
-install: mvn -B -X -q clean
+install: mvn -B -V -q clean
 
 # clean / compile - test - package - verify - install - deploy / site
-script: mvn -B -X verify
+script: mvn -B -e -ff verify
 
 jdk:
   - oraclejdk8
 
 notifications:
   email:
-    - bernd-2020@eckenfels.net
+    - bernd-2022@eckenfels.net
